@@ -7,17 +7,17 @@ namespace PelnoNuostolioSkaiciavimas.Services
 {
     public class ReadDataService
     {
-        public Dictionary<string, int> getColumnNumbers(string firstLine)
+        public Dictionary<string, int> GetColumnIndexes(string firstLine)
         {
-            Dictionary<string, int> columnNumbers = new Dictionary<string, int>();
+            Dictionary<string, int> columnIndexes = new Dictionary<string, int>();
             var names = firstLine.Split(';');
             for (int i = 0; i < names.Length; i++)
             {
-                columnNumbers.Add(names[i], i);
+                columnIndexes.Add(names[i], i);
             }
-            return columnNumbers;
+            return columnIndexes;
         }
-        public List<Trades> getTradesList(Dictionary<string, int> columnNumbers, IEnumerable<string> data)
+        public List<Trades> GetTradesList(Dictionary<string, int> columnNumbers, IEnumerable<string> data)
         {
             List<Trades> trades = new List<Trades>();
 

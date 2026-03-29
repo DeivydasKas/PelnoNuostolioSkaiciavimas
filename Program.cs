@@ -6,13 +6,19 @@ using System.Runtime.CompilerServices;
 //Console.OutputEncoding = System.Text.Encoding.UTF8;
 
 ReadDataService readDataService = new ReadDataService();
-ProfitCalculationService profitCalculation = new ProfitCalculationService();
+TradePnLService tradePnLService = new TradePnLService();
 
 Console.WriteLine("Enter client:");
 string? client = Console.ReadLine();
 
+if(string.IsNullOrWhiteSpace(client))
+{
+    Console.WriteLine("Client name was not entered");
+    return;
+}
+
 Console.WriteLine("Enter date: (e.g. 2024-01-02)");
-string date = Console.ReadLine();
+string? date = Console.ReadLine();
 
 if (!DateTime.TryParse(date, out DateTime validatedDate))
 {
@@ -21,20 +27,36 @@ if (!DateTime.TryParse(date, out DateTime validatedDate))
 }
 
 Console.WriteLine("Enter data file path:");
-string? dataFilePath = Console.ReadLine();
+string? filePath = Console.ReadLine();
+if(!File.Exists(filePath))
+{
+    Console.WriteLine("File not found");
+    return;
+}
 
-string firstLine = File.ReadLines("data.csv").First();
-IEnumerable<string> data = File.ReadAllLines("data.csv").Skip(1);
+var lines = File.ReadAllLines(filePath);
+if(lines.Length <= 1)
+{
+    Console.WriteLine("File is empty or has no data");
+    return;
+}
 
-Dictionary<string, int> columnNumbers = readDataService.getColumnNumbers(firstLine);
+string firstLine = File.ReadLines(filePath).First();
+IEnumerable<string> data = File.ReadAllLines(filePath).Skip(1);
 
 
+Dictionary<string, int> columnIndexes = readDataService.GetColumnIndexes(firstLine);
+List<Trades> tradesList = readDataService.GetTradesList(columnIndexes, data);
 
 
+List<List<Trades>> filteredLists = tradePnLService.GetFilteredTrades(tradesList, client, validatedDate);
 
-
-List<Trades> fullTrades = readDataService.getTradesList(columnNumbers, data);
-
-var result = profitCalculation.ProfitLossCalculation(fullTrades, client, validatedDate);
+foreach(var item in filteredLists)
+{
+    var tradesWithFeePerUnit = tradePnLService.CalculateFeePerUnit(item);
+    Dictionary<string, List<decimal>> results = tradePnLService.CalculatePnL(tradesWithFeePerUnit);
+    ResultPrinter.PrintResults(results, client, date, filePath);
+    Console.WriteLine(  );
+}
 
 Console.WriteLine("End of program");

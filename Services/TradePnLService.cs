@@ -4,11 +4,12 @@ using System.Text;
 
 namespace PelnoNuostolioSkaiciavimas.Services
 {
-    public class ProfitCalculationService
+    public class TradePnLService
     {
-        public string ProfitLossCalculation(List<Trades> trades, string client, DateTime date)
+        public List<List<Trades>> GetFilteredTrades(List<Trades> trades, string client, DateTime date)
         {
-            client = "Rūta";
+            List<List<Trades>> filteredLists = new List<List<Trades>>();
+           
             List<Trades> clientTrades = trades.Where(x => x.Client.Equals(client, StringComparison.OrdinalIgnoreCase) && x.Date <= date).ToList();
             #region not used
             ////Get a list of all possible Securities
@@ -34,19 +35,25 @@ namespace PelnoNuostolioSkaiciavimas.Services
             var ListTsla = clientTrades.Where(x => x.Security == "TSLA").OrderBy(t => t.Date).ToList();
             var ListAppl = clientTrades.Where(x => x.Security == "APPL").OrderBy(t => t.Date).ToList();
 
-            var tradesWithFeePerUnit = CalculateFeePerUnit(ListAppl);
-            var tradesWithFeePerUnitTsla = CalculateFeePerUnit(ListTsla);
-            var resultsAppl = Calculate(tradesWithFeePerUnit);
-            var resultsTsla = Calculate(tradesWithFeePerUnitTsla);
+            filteredLists.Add(ListTsla);
+            filteredLists.Add(ListAppl);
 
-            return string.Empty;
+            return filteredLists;
+
+            //var tradesWithFeePerUnit = CalculateFeePerUnit(ListAppl);
+            //var tradesWithFeePerUnitTsla = CalculateFeePerUnit(ListTsla);
+            //var resultsAppl = Calculate(tradesWithFeePerUnit);
+           // var resultsTsla = Calculate(tradesWithFeePerUnitTsla);
+
+            //return string.Empty;
         }
-        public decimal Calculate(List<Trades> fullTradesList)
+        public Dictionary<string, List<decimal>> CalculatePnL(List<Trades> fullTradesList)
         {
             List<Trades> buyTransactions = fullTradesList.Where(x => x.Type.Equals("BUY", StringComparison.OrdinalIgnoreCase)).ToList();
             List<Trades> sellTransactions = fullTradesList.Where(x => x.Type.Equals("SELL", StringComparison.OrdinalIgnoreCase)).ToList();
 
             List<decimal> results = new List<Decimal>();
+            Dictionary<string, List<decimal>> kvpResults = new Dictionary<string, List<decimal>>();
 
             foreach (var sellTrans in sellTransactions)
             {
@@ -55,7 +62,7 @@ namespace PelnoNuostolioSkaiciavimas.Services
                     decimal result = 0;
 
                     if (buyTrans.Amount == 0) continue;
-                    
+
                     if (buyTrans.Amount <= sellTrans.Amount)
                     {
                         result = ((buyTrans.Amount * sellTrans.Price) - (sellTrans.FeePerUnit * buyTrans.Amount)) - ((buyTrans.Amount * buyTrans.Price) + (buyTrans.FeePerUnit * buyTrans.Amount));
@@ -63,7 +70,7 @@ namespace PelnoNuostolioSkaiciavimas.Services
                         sellTrans.Amount = sellTrans.Amount - buyTrans.Amount;
                         buyTrans.Amount = 0;
                         results.Add(result);
-                        continue;           
+                        continue;
                     }
                     else
                     {
@@ -75,11 +82,10 @@ namespace PelnoNuostolioSkaiciavimas.Services
                         break;
                     }
                 }
-               
             }
-            var total = results.Sum();
+            kvpResults.Add($"{buyTransactions[0].Client}, {buyTransactions[0].Security}", results);
 
-            return total;
+            return kvpResults;
         }
 
         public List<Trades> CalculateFeePerUnit(List<Trades> fullTradesList)
