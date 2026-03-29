@@ -14,5 +14,7 @@ namespace PelnoNuostolioSkaiciavimas
         public int Amount { get; set; }
         public decimal Price { get; set; }
         public decimal Fee { get; set; }
+
+        public decimal FeePerUnit { get; set; }
     }
 }

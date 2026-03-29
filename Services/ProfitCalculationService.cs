@@ -8,7 +8,8 @@ namespace PelnoNuostolioSkaiciavimas.Services
     {
         public string ProfitLossCalculation(List<Trades> trades, string client, DateTime date)
         {
-            List<Trades> clientTrades = trades.Where(x => x.Client == client && x.Date <= date).ToList();
+            client = "Rūta";
+            List<Trades> clientTrades = trades.Where(x => x.Client.Equals(client, StringComparison.OrdinalIgnoreCase) && x.Date <= date).ToList();
             #region not used
             ////Get a list of all possible Securities
             //List<string> securityList = new List<string>();
@@ -33,42 +34,62 @@ namespace PelnoNuostolioSkaiciavimas.Services
             var ListTsla = clientTrades.Where(x => x.Security == "TSLA").OrderBy(t => t.Date).ToList();
             var ListAppl = clientTrades.Where(x => x.Security == "APPL").OrderBy(t => t.Date).ToList();
 
-            Calculate(ListTsla);
+            var tradesWithFeePerUnit = CalculateFeePerUnit(ListAppl);
+            var tradesWithFeePerUnitTsla = CalculateFeePerUnit(ListTsla);
+            var resultsAppl = Calculate(tradesWithFeePerUnit);
+            var resultsTsla = Calculate(tradesWithFeePerUnitTsla);
 
             return string.Empty;
         }
-        public string Calculate(List<Trades> fullTradesList)
+        public decimal Calculate(List<Trades> fullTradesList)
         {
-            List<Trades> buyTranstactions = fullTradesList.Where(x => x.Type.Equals("BUY", StringComparison.OrdinalIgnoreCase)).ToList();
-            List<Trades> sellTranstactions = fullTradesList.Where(x => x.Type.Equals("BUY", StringComparison.OrdinalIgnoreCase)).ToList();
+            List<Trades> buyTransactions = fullTradesList.Where(x => x.Type.Equals("BUY", StringComparison.OrdinalIgnoreCase)).ToList();
+            List<Trades> sellTransactions = fullTradesList.Where(x => x.Type.Equals("SELL", StringComparison.OrdinalIgnoreCase)).ToList();
 
-            //Pachekinti jei sell transakcija pirma.
-            foreach (var item in sellTranstactions)
+            List<decimal> results = new List<Decimal>();
+
+            foreach (var sellTrans in sellTransactions)
             {
-                var buyTrans = buyTranstactions.First();
-                buyTranstactions.Remove(buyTrans);
-
-                if (buyTrans.Amount < item.Amount)
+                foreach (var buyTrans in buyTransactions)
                 {
-                    var result = ((buyTrans.Amount * item.Price) - (item.Fee / item.Amount * buyTrans.Amount)) - ((buyTrans.Amount * buyTrans.Price) + buyTrans.Fee);
-                    var amountLeft = item.Amount - buyTrans.Amount;
-                    if (amountLeft > 0)
+                    decimal result = 0;
+
+                    if (buyTrans.Amount == 0) continue;
+                    
+                    if (buyTrans.Amount <= sellTrans.Amount)
                     {
-                        item.Amount = item.Amount - buyTrans.Amount;
+                        result = ((buyTrans.Amount * sellTrans.Price) - (sellTrans.FeePerUnit * buyTrans.Amount)) - ((buyTrans.Amount * buyTrans.Price) + (buyTrans.FeePerUnit * buyTrans.Amount));
+
+                        sellTrans.Amount = sellTrans.Amount - buyTrans.Amount;
+                        buyTrans.Amount = 0;
+                        results.Add(result);
+                        continue;           
                     }
                     else
                     {
-                        item.Amount = 0;
+                        result = ((sellTrans.Amount * sellTrans.Price) - (sellTrans.FeePerUnit * sellTrans.Amount)) - ((sellTrans.Amount * buyTrans.Price) + (buyTrans.FeePerUnit * sellTrans.Amount));
+
+                        buyTrans.Amount = buyTrans.Amount - sellTrans.Amount;
+                        sellTrans.Amount = 0;
+                        results.Add(result);
+                        break;
                     }
                 }
-                else
-                {
-                    var result = ((item.Amount * item.Price) - item.Fee) - ((buyTrans.Amount * buyTrans.Price) + buyTrans.Fee);
-                }
-
+               
             }
+            var total = results.Sum();
 
-            return string.Empty;
+            return total;
+        }
+
+        public List<Trades> CalculateFeePerUnit(List<Trades> fullTradesList)
+        {
+            foreach(var trade in fullTradesList)
+            {
+                var feePerUnitResult = trade.Fee / trade.Amount;
+                trade.FeePerUnit = feePerUnitResult;
+            }
+            return fullTradesList;
         }
     }
 }

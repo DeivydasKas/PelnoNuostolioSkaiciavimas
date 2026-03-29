@@ -39,7 +39,6 @@ namespace PelnoNuostolioSkaiciavimas.Services
                         case "Type":
                             trade.Type = (spllitedLine[entry.Value]).ToString();
                             break;
-
                         case "Client":
                             trade.Client = (spllitedLine[entry.Value]);
                             break;
