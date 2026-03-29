@@ -44,13 +44,6 @@ if(lines.Length <= 1)
     return;
 }
 
-Console.WriteLine("Enter results file path:");
-string? resultsFilePath = Console.ReadLine();
-if (string.IsNullOrWhiteSpace(resultsFilePath))
-{
-    Console.WriteLine("Invalid results file path");
-    return;
-}
 #endregion
 
 #region Read data
@@ -70,8 +63,8 @@ foreach (var item in filteredLists)
 {
     var tradesWithFeePerUnit = tradePnLService.CalculateFeePerUnit(item);
     Dictionary<string, List<decimal>> results = tradePnLService.CalculatePnL(tradesWithFeePerUnit);
-    ResultPrinter.PrintResults(results, resultsFilePath);
+    ResultPrinter.PrintResults(results);
 }
 #endregion
 
-Console.WriteLine("End of program");
+Console.WriteLine($"End of program");

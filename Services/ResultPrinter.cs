@@ -6,7 +6,7 @@ namespace PelnoNuostolioSkaiciavimas.Services
 {
     public static class ResultPrinter
     {
-        public static void PrintResults(Dictionary<string, List<decimal>> results, string resultsFilePath)
+        public static void PrintResults(Dictionary<string, List<decimal>> results)
         {
             StringBuilder sb = new StringBuilder();
             foreach (var kvp in results)
@@ -20,7 +20,7 @@ namespace PelnoNuostolioSkaiciavimas.Services
                 sb.AppendLine($"Total PnL: {totalSum.ToString("F4")}");
                 sb.AppendLine("-----------------------------");
             }
-            File.AppendAllText(resultsFilePath, sb.ToString());
+            File.AppendAllText("out.txt", sb.ToString());
 
         }
     }
