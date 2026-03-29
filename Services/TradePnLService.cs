@@ -39,13 +39,6 @@ namespace PelnoNuostolioSkaiciavimas.Services
             filteredLists.Add(ListAppl);
 
             return filteredLists;
-
-            //var tradesWithFeePerUnit = CalculateFeePerUnit(ListAppl);
-            //var tradesWithFeePerUnitTsla = CalculateFeePerUnit(ListTsla);
-            //var resultsAppl = Calculate(tradesWithFeePerUnit);
-           // var resultsTsla = Calculate(tradesWithFeePerUnitTsla);
-
-            //return string.Empty;
         }
         public Dictionary<string, List<decimal>> CalculatePnL(List<Trades> fullTradesList)
         {

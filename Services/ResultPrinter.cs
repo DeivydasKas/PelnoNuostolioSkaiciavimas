@@ -6,9 +6,8 @@ namespace PelnoNuostolioSkaiciavimas.Services
 {
     public static class ResultPrinter
     {
-        public static void PrintResults(Dictionary<string, List<decimal>> results, string client, string date, string filePath)
+        public static void PrintResults(Dictionary<string, List<decimal>> results, string resultsFilePath)
         {
-            //var total = results.Sum();
             StringBuilder sb = new StringBuilder();
             foreach (var kvp in results)
             {
@@ -16,12 +15,12 @@ namespace PelnoNuostolioSkaiciavimas.Services
                 var totalSum = kvp.Value.Sum();
                 foreach(var item in kvp.Value)
                 {
-                    sb.AppendLine($"{item}");
+                    sb.AppendLine($"{item.ToString("F4")}");
                 }
-                sb.AppendLine($"Total PnL: {totalSum}");
+                sb.AppendLine($"Total PnL: {totalSum.ToString("F4")}");
                 sb.AppendLine("-----------------------------");
             }
-            File.AppendAllText("C:\\Users\\Deivydas\\result.txt", sb.ToString());
+            File.AppendAllText(resultsFilePath, sb.ToString());
 
         }
     }

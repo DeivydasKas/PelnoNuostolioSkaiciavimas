@@ -1,13 +1,16 @@
 ﻿using PelnoNuostolioSkaiciavimas;
 using PelnoNuostolioSkaiciavimas.Services;
 using System.Runtime.CompilerServices;
+using System.Text;
 
-//Console.InputEncoding = System.Text.Encoding.UTF8;
-//Console.OutputEncoding = System.Text.Encoding.UTF8;
+Console.InputEncoding = Encoding.Unicode;
+Console.OutputEncoding = Encoding.UTF8;
 
 ReadDataService readDataService = new ReadDataService();
 TradePnLService tradePnLService = new TradePnLService();
 
+
+#region User Input validation
 Console.WriteLine("Enter client:");
 string? client = Console.ReadLine();
 
@@ -41,22 +44,34 @@ if(lines.Length <= 1)
     return;
 }
 
+Console.WriteLine("Enter results file path:");
+string? resultsFilePath = Console.ReadLine();
+if (string.IsNullOrWhiteSpace(resultsFilePath))
+{
+    Console.WriteLine("Invalid results file path");
+    return;
+}
+#endregion
+
+#region Read data
 string firstLine = File.ReadLines(filePath).First();
 IEnumerable<string> data = File.ReadAllLines(filePath).Skip(1);
 
-
 Dictionary<string, int> columnIndexes = readDataService.GetColumnIndexes(firstLine);
 List<Trades> tradesList = readDataService.GetTradesList(columnIndexes, data);
+#endregion
 
-
+#region Filter
 List<List<Trades>> filteredLists = tradePnLService.GetFilteredTrades(tradesList, client, validatedDate);
+#endregion
 
-foreach(var item in filteredLists)
+#region Return Results
+foreach (var item in filteredLists)
 {
     var tradesWithFeePerUnit = tradePnLService.CalculateFeePerUnit(item);
     Dictionary<string, List<decimal>> results = tradePnLService.CalculatePnL(tradesWithFeePerUnit);
-    ResultPrinter.PrintResults(results, client, date, filePath);
-    Console.WriteLine(  );
+    ResultPrinter.PrintResults(results, resultsFilePath);
 }
+#endregion
 
 Console.WriteLine("End of program");

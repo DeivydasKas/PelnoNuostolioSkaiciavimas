@@ -17,42 +17,42 @@ namespace PelnoNuostolioSkaiciavimas.Services
             }
             return columnIndexes;
         }
-        public List<Trades> GetTradesList(Dictionary<string, int> columnNumbers, IEnumerable<string> data)
+        public List<Trades> GetTradesList(Dictionary<string, int> columnIndexes, IEnumerable<string> data)
         {
             List<Trades> trades = new List<Trades>();
 
             foreach (var item in data)
             {
-                var spllitedLine = item.Split(';');
+                var splitLine = item.Split(';');
                 Trades trade = new Trades();
-                foreach (KeyValuePair<string, int> entry in columnNumbers)
+                foreach (KeyValuePair<string, int> entry in columnIndexes)
                 {
 
                     switch (entry.Key)
                     {
                         case "TradeId":
-                            trade.TradeId = Int32.Parse(spllitedLine[entry.Value]);
+                            trade.TradeId = Int32.Parse(splitLine[entry.Value]);
                             break;
                         case "Amount":
-                            trade.Amount = Int32.Parse(spllitedLine[entry.Value]);
+                            trade.Amount = Int32.Parse(splitLine[entry.Value]);
                             break;
                         case "Type":
-                            trade.Type = (spllitedLine[entry.Value]).ToString();
+                            trade.Type = (splitLine[entry.Value]).ToString();
                             break;
                         case "Client":
-                            trade.Client = (spllitedLine[entry.Value]);
+                            trade.Client = (splitLine[entry.Value]);
                             break;
                         case "Security":
-                            trade.Security = (spllitedLine[entry.Value]);
+                            trade.Security = (splitLine[entry.Value]);
                             break;
                         case "Date":
-                            trade.Date = DateTime.Parse(spllitedLine[entry.Value]);
+                            trade.Date = DateTime.Parse(splitLine[entry.Value]);
                             break;
                         case "Price":
-                            trade.Price = decimal.Parse(spllitedLine[entry.Value], CultureInfo.GetCultureInfo("lt-LT"));
+                            trade.Price = decimal.Parse(splitLine[entry.Value], CultureInfo.GetCultureInfo("lt-LT"));
                             break;
                         case "Fee":
-                            trade.Fee = decimal.Parse(spllitedLine[entry.Value], CultureInfo.GetCultureInfo("lt-LT"));
+                            trade.Fee = decimal.Parse(splitLine[entry.Value], CultureInfo.GetCultureInfo("lt-LT"));
                             break;
                     }
                 }
