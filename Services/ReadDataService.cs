@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 
-namespace PelnoNuostolioSkaiciavimas
+namespace PelnoNuostolioSkaiciavimas.Services
 {
     public class ReadDataService
     {
